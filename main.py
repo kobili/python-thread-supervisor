@@ -1,7 +1,6 @@
-from kafka import Producer
-import threading
-from resilient_thread import ResilientThread
+import atexit
 
+from kafka import Producer
 from supervisor import ThreadSupervisor
 
 
@@ -12,11 +11,12 @@ if __name__ == "__main__":
         producer.produce({"value": i})
 
     supervisor = ThreadSupervisor()
-    supervisor.add_task(producer.poll_loop)
 
-    supervisor_thread = supervisor.start_workers()
-    supervisor_thread.join()
+    try:
+        supervisor.add_task(producer.poll_loop)
+        atexit.register(supervisor.stop_workers)
 
-    # thread = ResilientThread(producer.poll_loop)
-    # thread.start()
-    # thread.join()
+        supervisor_thread = supervisor.start_workers()
+        supervisor_thread.join()
+    except KeyboardInterrupt:
+        supervisor.stop_workers()
