@@ -1,6 +1,8 @@
 import json
 from random import randint
 import threading
+import time
+
 
 class Producer:
     """
@@ -20,7 +22,7 @@ class Producer:
 
     def poll(self):
         rng = randint(1, 100)
-        if rng <= 1:
+        if rng <= 10:
             raise Exception("Exception happened in `poll`")
 
         if self._queue:
@@ -31,3 +33,8 @@ class Producer:
                     return
                 
         print("No messages found during `poll`")
+
+    def poll_loop(self):
+        while True:
+            self.poll()
+            time.sleep(0.1)
